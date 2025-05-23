@@ -4162,20 +4162,6 @@ ee-first@1.1.1:
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
 
-ejs@^3.1.5:
-  version "3.1.5"
-  resolved "https://registry.yarnpkg.com/ejs/-/ejs-3.1.5.tgz#aed723844dc20acb4b170cd9ab1017e476a0d93b"
-  integrity sha512-dldq3ZfFtgVTJMLjOe+/3sROTzALlL9E34V4/sDtUd/KlBSS0s6U1/+WPE1B4sj9CXHJpL1M6rhNJnc9Wbal9w==
-  dependencies:
-    jake "^10.6.1"
-
-ejs@^3.1.6:
-  version "3.1.10"
-  resolved "https://registry.yarnpkg.com/ejs/-/ejs-3.1.10.tgz#69ab8358b14e896f80cc39e62087b88500c3ac3b"
-  integrity sha512-UeJmFfOrAQS8OJWPZ4qtgHyWExa088/MtK5UEyoJGFH67cDEXkZSviOiKRCZ4Xij0zxI3JECgYs3oKx+AizQBA==
-  dependencies:
-    jake "^10.8.5"
-
 electron-to-chromium@^1.5.73:
   version "1.5.108"
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.108.tgz#5a83c99d01d391a6d6b5bb658cb645985a717f53"

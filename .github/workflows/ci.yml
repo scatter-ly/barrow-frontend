@@ -142,13 +142,21 @@ jobs:
 
       - name: Publish NPM package to GitHub with latest tag
         if: github.event.release.prerelease == false && github.event_name == 'release'
-        run: npm version minor && npm publish --tag latest
+        run: |-
+          git config --global user.email "205827875+scatterly-bot@users.noreply.github.com"
+          git config --global user.name "scatterly-bot"
+          npm version minor
+          npm publish --tag latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish NPM package to GitHub with next tag
         if: github.event.release.prerelease == true && github.event_name == 'release'
-        run: npm version prerelease --preid=next && npm publish --tag next
+        run: |-
+          git config --global user.email "205827875+scatterly-bot@users.noreply.github.com"
+          git config --global user.name "scatterly-bot"
+          npm version prerelease --preid=next
+          npm publish --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

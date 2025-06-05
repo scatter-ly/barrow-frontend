@@ -1,0 +1,223 @@
+name: Release barrow-frontend
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 20.x
+  NODE_OPTIONS: --max-old-space-size=4096
+  cache-prefix: "crates-frontend"
+
+jobs:
+  # This step only runs yarn install to make sure that an exact match is available
+  # in the cache. The two following verify and tests jobs then always install from cache.
+  install:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20.x]
+    env:
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=8192
+
+    name: Install ${{ matrix.node-version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: cache all node_modules
+        id: cache-modules
+        uses: actions/cache@v4
+        with:
+          path: "**/node_modules"
+          key: ${{ env.cache-prefix }}-${{ matrix.node-version }}-node_modules-${{ hashFiles('yarn.lock', '**/package.json') }}
+
+      # If we get a cache hit for node_modules, there's no need to bring in the global
+      # yarn cache or run yarn install, as all dependencies will be installed already.
+      - name: find location of global yarn cache
+        id: yarn-cache
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        shell: bash
+        run: echo "dir=$([[ "$(yarn --version)" =~ "1.*" ]] && yarn cache dir || yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+
+      - name: cache global yarn cache
+        uses: actions/cache@v4
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ env.cache-prefix }}-${{ matrix.node-version }}-node_modules-${{ hashFiles('yarn.lock', '**/package.json') }}
+          restore-keys: |
+            ${{ env.cache-prefix }}-${{ matrix.node-version }}-node_modules-
+
+      - name: npm install
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        shell: bash
+        run: "npm ci"
+
+  # The verify jobs runs all the verification that doesn't require a
+  # diff towards main, since it takes some time to fetch that.
+  verify:
+    runs-on: ubuntu-latest
+    needs: install
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20.x]
+    env:
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=8192
+
+    name: Verify ${{ matrix.node-version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: cache all node_modules
+        id: cache-modules
+        uses: actions/cache@v4
+        with:
+          path: "**/node_modules"
+          key: ${{ env.cache-prefix }}-${{ matrix.node-version }}-node_modules-${{ hashFiles('package-lock.json', '**/package.json') }}
+
+      - name: npn install
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        shell: bash
+        run: "npm ci"
+
+      - name: type checking and declarations
+        run: npm run tsc
+
+      - name: prettier
+        run: npm run prettier:check
+
+  build-npm:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+
+    needs: install
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20.x]
+    env:
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=8192
+
+    name: Build NPM package with NodeJS ${{ matrix.node-version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: cache all node_modules
+        id: cache-modules
+        uses: actions/cache@v4
+        with:
+          path: "**/node_modules"
+          key: ${{ env.cache-prefix }}-${{ matrix.node-version }}-node_modules-${{ hashFiles('package-lock.json', '**/package.json') }}
+
+      - name: npn install
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        shell: bash
+        run: "npm ci"
+
+      - name: Publish NPM package to GitHub with latest tag
+        if: github.event.release.prerelease == false && github.event_name == 'release'
+        run: npm version minor && npm publish --tag latest
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish NPM package to GitHub with next tag
+        if: github.event.release.prerelease == true && github.event_name == 'release'
+        run: npm version prerelease --preid=next && npm publish --tag next
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-container:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+    needs: install
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20.x]
+    env:
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=8192
+
+    name: Build Container with NodeJS ${{ matrix.node-version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: cache all node_modules
+        id: cache-modules
+        uses: actions/cache@v4
+        with:
+          path: "**/node_modules"
+          key: ${{ env.cache-prefix }}-${{ matrix.node-version }}-node_modules-${{ hashFiles('package-lock.json', '**/package.json') }}
+
+      - name: npn install
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        shell: bash
+        run: "npm ci"
+
+      - name: npm build
+        run: npm run build
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+
+      - name: Get short git commit SHA
+        id: short-sha
+        run: |-
+          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          echo "Tags = ${{ steps.meta.outputs.tags }}"
+          echo "Labels = ${{ steps.meta.outputs.labels }}"
+          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
+
+      - name: Build and Push Container
+        run: |-
+          docker compose build
+          docker push ghcr.io/scatter-ly/barrow-frontend:latest
+          docker tag ghcr.io/scatter-ly/barrow-frontend:latest "ghcr.io/scatter-ly/barrow-frontend:${{ env.COMMIT_SHORT_SHA }}"
+          docker push "ghcr.io/scatter-ly/barrow-frontend:${{ env.COMMIT_SHORT_SHA }}"
+          docker tag ghcr.io/scatter-ly/barrow-frontend:latest "ghcr.io/scatter-ly/barrow-frontend:${{ github.ref }}"
+          docker push "ghcr.io/scatter-ly/barrow-frontend:${{ github.ref }}"

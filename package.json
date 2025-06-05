@@ -1,7 +1,15 @@
 {
-  "name": "barrow-frontend",
+  "name": "@scatter-ly/barrow-frontend",
   "version": "0.1.0",
-  "private": true,
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scatter-ly/barrow-frontend.git"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "dist/index.js",
   "dependencies": {
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
@@ -17,11 +25,30 @@
     "typescript": "^4.4.2",
     "web-vitals": "^2.1.0"
   },
+  "devDependencies": {
+    "@types/eslint": "^8.4.5",
+    "@types/express": "^4.17.14",
+    "@types/prettier": "^2.6.3",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
+    "@typescript-eslint/parser": "^5.31.0",
+    "eslint": "^8.20.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jest": "^27.0.1",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "typescript-eslint": "^8.33.1"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "tsc": "tsc --noEmit false",
+    "lint": "eslint --ext .js,.ts .",
+    "prettier:check": "prettier --check .",
+    "prettier:write": "prettier --write ."
   },
   "eslintConfig": {
     "extends": [
@@ -40,6 +67,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
+  }
 }

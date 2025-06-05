@@ -1,0 +1,18 @@
+docker:
+  - Dockerfile
+  - docker-compose.yaml
+application:
+  - src/**/*
+  - package.json
+  - yarn.lock
+  - .env*
+config:
+  - tsconfig.json
+  - .eslintrc.js
+  - .gitignore
+  - .npmrc
+  - .prettierignore
+ci:
+  - .github/**/*
+docs:
+  - README.md

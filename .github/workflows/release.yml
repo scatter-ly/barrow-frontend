@@ -106,11 +106,11 @@ jobs:
         shell: bash
         run: "npm ci"
 
-      - name: type checking and declarations
-        run: npm run tsc
-
       - name: prettier
         run: npm run prettier:check
+
+      - name: type checking and declarations
+        run: npm run tsc
 
   build-npm:
     runs-on: ubuntu-latest

@@ -143,8 +143,12 @@ jobs:
       - name: Publish NPM package to GitHub with latest tag
         if: github.event.release.prerelease == false && github.event_name == 'release'
         run: |-
-          git config --global user.email "205827875+scatterly-bot@users.noreply.github.com"
-          git config --global user.name "scatterly-bot"
+          # get git short sha, commit email, commit name
+          gitInfo=$(git log --pretty=format:"%h|%ce|%cn" -1)
+          email=$(echo $gitInfo | awk -F'|' '{print $2}')
+          name=$(echo $gitInfo | awk -F'|' '{print $3}')
+          git config --global user.email "$email"
+          git config --global user.name "$name"
           npm version minor
           npm publish --tag latest
         env:
@@ -153,8 +157,12 @@ jobs:
       - name: Publish NPM package to GitHub with next tag
         if: github.event.release.prerelease == true && github.event_name == 'release'
         run: |-
-          git config --global user.email "205827875+scatterly-bot@users.noreply.github.com"
-          git config --global user.name "scatterly-bot"
+          # get git short sha, commit email, commit name
+          gitInfo=$(git log --pretty=format:"%h|%ce|%cn" -1)
+          email=$(echo $gitInfo | awk -F'|' '{print $2}')
+          name=$(echo $gitInfo | awk -F'|' '{print $3}')
+          git config --global user.email "$email"
+          git config --global user.name "$name"
           npm version prerelease --preid=next
           npm publish --tag next
         env:

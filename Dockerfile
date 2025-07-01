@@ -35,6 +35,6 @@ ENV NODE_ENV=production
 COPY --chown=node:node package-lock.json package.json ./
 COPY --chown=node:node build ./build
 
-RUN --mount=type=cache,target=/home/node/.yarn/berry/cache,sharing=locked,uid=1000,gid=1000 \
-    npm ci
+RUN --mount=type=cache,target=/home/node/.npm,sharing=locked,uid=1000,gid=1000 \
+    npm ci --cache .npm
 

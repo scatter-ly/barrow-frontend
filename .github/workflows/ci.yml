@@ -1,4 +1,4 @@
-name: Release barrow-frontend
+name: CI for barrow-frontend
 on:
   pull_request:
 
@@ -235,5 +235,3 @@ jobs:
           docker push ghcr.io/scatter-ly/barrow-frontend:latest
           docker tag ghcr.io/scatter-ly/barrow-frontend:latest "ghcr.io/scatter-ly/barrow-frontend:${{ env.COMMIT_SHORT_SHA }}"
           docker push "ghcr.io/scatter-ly/barrow-frontend:${{ env.COMMIT_SHORT_SHA }}"
-          docker tag ghcr.io/scatter-ly/barrow-frontend:latest "ghcr.io/scatter-ly/barrow-frontend:${{ github.ref }}"
-          docker push "ghcr.io/scatter-ly/barrow-frontend:${{ github.ref }}"

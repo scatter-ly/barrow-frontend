@@ -8,3 +8,4 @@ typings
 templates
 api-report.md
 .vscode
+.github/labeler.yml

@@ -1,4 +1,4 @@
-name: Release barrow-frontend
+name: CI for barrow-frontend
 on:
   pull_request:
 
